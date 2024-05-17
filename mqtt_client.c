@@ -1453,6 +1453,8 @@ static void esp_mqtt_task(void *pv)
     xEventGroupClearBits(client->status_bits, STOPPED_BIT);
     while (client->run) {
         MQTT_API_LOCK(client);
+        // delete long pending messages
+        mqtt_delete_expired_messages(client);
         switch (client->state) {
         case MQTT_STATE_DISCONNECTED:
             break;
@@ -1504,9 +1506,6 @@ static void esp_mqtt_task(void *pv)
                 esp_mqtt_abort_connection(client);
                 break;
             }
-
-            // delete long pending messages
-            mqtt_delete_expired_messages(client);
 
             // resend all non-transmitted messages first
             outbox_item_handle_t item = outbox_dequeue(client->outbox, QUEUED, NULL);
