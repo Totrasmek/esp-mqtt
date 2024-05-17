@@ -1470,10 +1470,12 @@ static void esp_mqtt_task(void *pv)
             esp_mqtt_set_ssl_transport_properties(client->transport_list, client->config);
 #endif
 
+            MQTT_API_UNLOCK(client);
             if (esp_transport_connect(client->transport,
                                       client->config->host,
                                       client->config->port,
                                       client->config->network_timeout_ms) < 0) {
+                MQTT_API_LOCK(client);
                 ESP_LOGE(TAG, "Error transport connect");
                 esp_mqtt_client_dispatch_transport_error(client);
                 esp_mqtt_abort_connection(client);
@@ -1481,10 +1483,12 @@ static void esp_mqtt_task(void *pv)
             }
             ESP_LOGD(TAG, "Transport connected to %s://%s:%d", client->config->scheme, client->config->host, client->config->port);
             if (esp_mqtt_connect(client, client->config->network_timeout_ms) != ESP_OK) {
+                MQTT_API_LOCK(client);
                 ESP_LOGE(TAG, "MQTT connect failed");
                 esp_mqtt_abort_connection(client);
                 break;
             }
+            MQTT_API_LOCK(client);
             client->event.event_id = MQTT_EVENT_CONNECTED;
             client->event.session_present = mqtt_get_connect_session_present(client->mqtt_state.in_buffer);
             client->state = MQTT_STATE_CONNECTED;
@@ -1508,6 +1512,7 @@ static void esp_mqtt_task(void *pv)
 
             // resend all non-transmitted messages first
             outbox_item_handle_t item = outbox_dequeue(client->outbox, QUEUED, NULL);
+            MQTT_API_UNLOCK(client);
             if (item) {
                 if (mqtt_resend_queued(client, item) != ESP_OK) {
                     ESP_LOGE(TAG,"Resend failed");
@@ -1515,8 +1520,10 @@ static void esp_mqtt_task(void *pv)
             }
 
             if (process_keepalive(client) != ESP_OK) {
+                MQTT_API_LOCK(client);
                 break;
             }
+            MQTT_API_LOCK(client);
 
             if (client->config->refresh_connection_after_ms &&
                 has_timed_out(client->refresh_connection_tick, client->config->refresh_connection_after_ms)) {
