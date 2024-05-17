@@ -1509,15 +1509,8 @@ static void esp_mqtt_task(void *pv)
             // resend all non-transmitted messages first
             outbox_item_handle_t item = outbox_dequeue(client->outbox, QUEUED, NULL);
             if (item) {
-                if (mqtt_resend_queued(client, item) == ESP_OK) {
-                    outbox_set_pending(client->outbox, client->mqtt_state.pending_msg_id, TRANSMITTED);
-                }
-                // resend other "transmitted" messages after 1s
-            } else if (has_timed_out(last_retransmit, client->config->message_retransmit_timeout)) {
-                last_retransmit = platform_tick_get_ms();
-                item = outbox_dequeue(client->outbox, TRANSMITTED, &msg_tick);
-                if (item && (last_retransmit - msg_tick > client->config->message_retransmit_timeout))  {
-                    mqtt_resend_queued(client, item);
+                if (mqtt_resend_queued(client, item) != ESP_OK) {
+                    ESP_LOGE(TAG,"Resend failed");
                 }
             }
 
