@@ -1391,7 +1391,6 @@ static esp_err_t mqtt_resend_queued(esp_mqtt_client_handle_t client, outbox_item
     // try to resend the data
     if (mqtt_write_data(client) != ESP_OK) {
         ESP_LOGE(TAG, "Error to resend data ");
-        esp_mqtt_abort_connection(client);
         return ESP_FAIL;
     }
 
