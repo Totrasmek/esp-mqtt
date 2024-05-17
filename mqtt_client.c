@@ -1558,12 +1558,6 @@ static void esp_mqtt_task(void *pv)
             break;
         }
         MQTT_API_UNLOCK(client);
-        if (MQTT_STATE_CONNECTED == client->state) {
-            if (esp_transport_poll_read(client->transport, MQTT_POLL_READ_TIMEOUT_MS) < 0) {
-                ESP_LOGE(TAG, "Poll read error: %d, aborting connection", errno);
-                esp_mqtt_abort_connection(client);
-            }
-        }
 
     }
     esp_transport_close(client->transport);
