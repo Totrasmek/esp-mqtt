@@ -1424,6 +1424,10 @@ static void mqtt_delete_expired_messages(esp_mqtt_client_handle_t client)
 #endif
     client->mqtt_state.pending_msg_count -= deleted_items;
 
+    if(deleted_items) {
+        ESP_LOGD(TAG,"Deleted %d",deleted_items);
+    }
+
     if (client->mqtt_state.pending_msg_count < 0) {
         client->mqtt_state.pending_msg_count = 0;
     }
