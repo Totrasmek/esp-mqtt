@@ -29,6 +29,18 @@ ESP_EVENT_DEFINE_BASE(MQTT_EVENTS);
 #define MQTT_OVER_WS_SCHEME  "ws"
 #define MQTT_OVER_WSS_SCHEME "wss"
 
+/**
+ * @brief Internal error types for TCP connection issues not covered in socket's errno
+ */
+enum tcp_transport_errors {
+    ERR_TCP_TRANSPORT_CONNECTION_TIMEOUT,
+    ERR_TCP_TRANSPORT_CANNOT_RESOLVE_HOSTNAME,
+    ERR_TCP_TRANSPORT_CONNECTION_CLOSED_BY_FIN,
+    ERR_TCP_TRANSPORT_CONNECTION_FAILED,
+    ERR_TCP_TRANSPORT_SETOPT_FAILED,
+    ERR_TCP_TRANSPORT_NO_MEM,
+};
+
 const static int STOPPED_BIT = (1 << 0);
 const static int RECONNECT_BIT = (1 << 1);
 const static int DISCONNECT_BIT = (1 << 2);
