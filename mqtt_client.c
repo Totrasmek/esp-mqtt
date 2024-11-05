@@ -1524,7 +1524,8 @@ static esp_err_t mqtt_resend_queued(esp_mqtt_client_handle_t client, outbox_item
     }
 
     // try to resend the data
-    if (esp_mqtt_write(client) != ESP_OK) {
+    esp_err_t write_error = esp_mqtt_write(client);
+    if (write_error != ESP_OK && write_error != ESP_ERR_TIMEOUT) {
         ESP_LOGE(TAG, "Error to resend data ");
         esp_mqtt_abort_connection(client);
         return ESP_FAIL;
