@@ -60,7 +60,9 @@ outbox_item_handle_t outbox_enqueue(outbox_handle_t outbox, outbox_message_handl
     }
     STAILQ_INSERT_TAIL(outbox->list, item, next);
     outbox->size += item->len;
-    ESP_LOGD(TAG, "ENQUEUE msgid=%d, msg_type=%d, len=%d, size=%"PRIu64, message->msg_id, message->msg_type, message->len + message->remaining_len, outbox_get_size(outbox));
+    int64_t outbox_size = outbox_get_size(outbox);
+    ESP_LOGD(TAG, "ENQUEUE msgid=%d, msg_type=%d, len=%d, size=0x%08x%08x", message->msg_id, message->msg_type,
+             message->len + message->remaining_len, (uint32_t)(outbox_size >> 32), (uint32_t)(outbox_size));
     return item;
 }
 
@@ -125,7 +127,9 @@ esp_err_t outbox_delete(outbox_handle_t outbox, int msg_id, int msg_type)
             outbox->size -= item->len;
             free(item->buffer);
             free(item);
-            ESP_LOGD(TAG, "DELETED msgid=%d, msg_type=%d, remain size=%"PRIu64, msg_id, msg_type, outbox_get_size(outbox));
+            int64_t outbox_size = outbox_get_size(outbox);
+            ESP_LOGD(TAG, "DELETED msgid=%d, msg_type=%d, remain size=0x%08x%08x", msg_id, msg_type,
+                     (uint32_t)(outbox_size >> 32), (uint32_t)(outbox_size));
             return ESP_OK;
         }
 
